@@ -6,7 +6,6 @@ export const transactionSchema = z.object({
   date: z.string().refine((val) => !isNaN(Date.parse(val)), {
     message: 'Invalid date format',
   }),
-  category: z.string().min(1),
   description: z.string().min(1),
 });
 
