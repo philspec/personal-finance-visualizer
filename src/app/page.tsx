@@ -1,77 +1,64 @@
-import Link from "next/link";
-import {
-  NavigationMenu,
-  NavigationMenuItem,
-  NavigationMenuLink,
-  NavigationMenuList,
-  navigationMenuTriggerStyle,
-} from "@/components/ui/navigation-menu";
-import { cn } from "@/lib/utils";
-import Image from "next/image";
+import { Suspense } from "react"
+import type { Metadata } from "next"
 
-export default function Home() {
-  let activeLink: string = "Dashboard";
+import { DashboardHeader } from "@/components/dashboard/dashboard-header"
+import { DashboardShell } from "@/components/dashboard/dashboard-shell"
+import { DashboardSummary } from "@/components/dashboard/dashboard-summary"
+import { RecentTransactions } from "@/components/transactions/recent-transactions"
+import { MonthlyExpensesChart } from "@/components/charts/monthly-expenses-chart"
+import { CategoryPieChart } from "@/components/charts/category-pie-chart"
+import { BudgetComparisonChart } from "@/components/charts/budget-comparison-chart"
+import { DashboardSkeleton } from "@/components/skeletons/dashboard-skeleton"
 
+export const metadata: Metadata = {
+  title: "Dashboard | Personal Finance Visualizer",
+  description: "Track your income, expenses, and budget with our personal finance visualizer.",
+}
+
+export default function DashboardPage() {
   return (
-    <div className="flex flex-col min-h-screen">
-      <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container flex h-14 max-w-screen-2xl items-center">
-          <div className="mr-4 flex items-center">
-            <div className="h-8 w-8 mr-2 bg-muted rounded flex items-center justify-center text-xs text-muted-foreground">
-              L
+    <main>
+      <DashboardShell>
+        <DashboardHeader 
+          heading="Dashboard" 
+          text="Get an overview of your financial health." 
+        />
+        <Suspense fallback={<DashboardSkeleton />}>
+          <section aria-labelledby="summary-heading" className="mb-6">
+            <h2 id="summary-heading" className="sr-only">Financial Summary</h2>
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              <DashboardSummary />
             </div>
-            <span className="font-bold">logo</span>
-          </div>
-
-          <nav className="flex flex-1 items-center justify-end space-x-2">
-            <NavigationMenu>
-              <NavigationMenuList>
-                <NavigationMenuItem>
-                  <Link href="/dashboard" legacyBehavior passHref>
-                    <NavigationMenuLink
-                      className={cn(
-                        navigationMenuTriggerStyle(),
-                        activeLink === "Dashboard" ? "bg-accent text-accent-foreground" : ""
-                      )}
-                    >
-                      Dashboard
-                    </NavigationMenuLink>
-                  </Link>
-                </NavigationMenuItem>
-                <NavigationMenuItem>
-                  <Link href="/transactions" legacyBehavior passHref>
-                    <NavigationMenuLink
-                      className={cn(
-                        navigationMenuTriggerStyle(),
-                        activeLink === "Transactions" ? "bg-accent text-accent-foreground" : ""
-                      )}
-                    >
-                      Transactions
-                    </NavigationMenuLink>
-                  </Link>
-                </NavigationMenuItem>
-              </NavigationMenuList>
-            </NavigationMenu>
-          </nav>
-        </div>
-      </header>
-
-      <main className="flex-1 container max-w-screen-2xl pt-8">
-        <h1 className="text-2xl font-semibold">
-          {activeLink} Content Area
-        </h1>
-        <p className="text-muted-foreground">
-          This is where the content for the {activeLink.toLowerCase()} page will go.
-        </p>
-      </main>
-
-      <footer className="py-6 md:px-8 md:py-0 border-t border-border/40">
-        <div className="container flex flex-col items-center justify-between gap-4 md:h-24 md:flex-row">
-          <p className="text-balance text-center text-sm leading-loose text-muted-foreground md:text-left">
-            Built by YourName/Company. The source code is available on GitHub.
-          </p>
-        </div>
-      </footer>
-    </div>
-  );
+          </section>
+          
+          <section aria-labelledby="charts-heading" className="mb-6">
+            <h2 id="charts-heading" className="sr-only">Financial Charts</h2>
+            <div className="grid gap-4 md:grid-cols-2">
+              <div className="p-6 bg-card rounded-lg border shadow-sm">
+                <h3 className="text-lg font-medium mb-4">Monthly Expenses</h3>
+                <MonthlyExpensesChart />
+              </div>
+              <div className="p-6 bg-card rounded-lg border shadow-sm">
+                <h3 className="text-lg font-medium mb-4">Spending by Category</h3>
+                <CategoryPieChart />
+              </div>
+            </div>
+          </section>
+          
+          <section aria-labelledby="budget-comparison-heading" className="mb-6">
+            <h2 id="budget-comparison-heading" className="sr-only">Budget Comparison</h2>
+            <div className="p-6 bg-card rounded-lg border shadow-sm">
+              <h3 className="text-lg font-medium mb-4">Budget vs. Actual</h3>
+              <BudgetComparisonChart />
+            </div>
+          </section>
+          
+          <section aria-labelledby="recent-transactions-heading">
+            <h2 id="recent-transactions-heading" className="text-lg font-medium mb-4">Recent Transactions</h2>
+            <RecentTransactions limit={5} />
+          </section>
+        </Suspense>
+      </DashboardShell>
+    </main>
+  )
 }
