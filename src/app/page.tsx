@@ -5,10 +5,10 @@ import { DashboardHeader } from "@/components/dashboard/dashboard-header"
 import { DashboardShell } from "@/components/dashboard/dashboard-shell"
 import { DashboardSummary } from "@/components/dashboard/dashboard-summary"
 import { RecentTransactions } from "@/components/transactions/recent-transactions"
-import { MonthlyExpensesChart } from "@/components/charts/monthly-expenses-chart"
 import { CategoryPieChart } from "@/components/charts/category-pie-chart"
 import { BudgetComparisonChart } from "@/components/charts/budget-comparison-chart"
 import { DashboardSkeleton } from "@/components/skeletons/dashboard-skeleton"
+import { CategoryBreakdown } from "@/components/dashboard/category-breakdown"
 
 export const metadata: Metadata = {
   title: "Dashboard | Personal Finance Visualizer",
@@ -31,12 +31,17 @@ export default function DashboardPage() {
             </div>
           </section>
           
-          <section aria-labelledby="charts-heading" className="mb-6">
+          <section aria-labelledby="charts-heading" className="mb-6 grid gap-3 grid-cols-1 md:grid-cols-2">
             <div>
-            <h2 id="charts-heading" className="sr-only">Financial Charts</h2>
               <div className="p-6 bg-card rounded-lg border shadow-sm">
-                <h3 className="text-lg font-medium mb-4">Spending by Category</h3>
+                <h3 className="text-lg font-medium mb-4 text-center">Spending by Category</h3>
                 <CategoryPieChart />
+              </div>
+            </div>
+            <div>
+              <div className="p-6 bg-card rounded-lg border shadow-sm min-h-full">
+                <h3 className="text-lg font-medium mb-4 text-center">Category Breakdown</h3>
+                <CategoryBreakdown />
               </div>
             </div>
           </section>
