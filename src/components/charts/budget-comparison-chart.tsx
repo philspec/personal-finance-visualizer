@@ -2,20 +2,29 @@
 
 import { useEffect, useState } from "react"
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts"
+import { format, startOfMonth, endOfMonth } from "date-fns"
+import { CalendarIcon } from "lucide-react"
 
 import { Card } from "@/components/ui/card"
 import { toast } from "@/components/ui/use-toast"
+import { Button } from "@/components/ui/button"
+import { Calendar } from "@/components/ui/calendar"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { cn } from "@/lib/utils"
+import { MonthPicker } from "@/components/ui/month-picker"
 
 interface Transaction {
   _id: string
   amount: number
   category: string
+  date: string
 }
 
 interface Budget {
   _id: string
   category: string
   amount: number
+  month: string
 }
 
 interface ComparisonData {
@@ -27,6 +36,7 @@ interface ComparisonData {
 export function BudgetComparisonChart() {
   const [chartData, setChartData] = useState<ComparisonData[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [selectedMonth, setSelectedMonth] = useState<Date>(startOfMonth(new Date()))
 
   useEffect(() => {
     const fetchData = async () => {
@@ -40,8 +50,15 @@ export function BudgetComparisonChart() {
         const transactions = await transactionsResponse.json()
         const budgets = await budgetsResponse.json()
 
-        // Filter expenses only
-        const expenses = transactions.filter((t: Transaction) => t.amount < 0)
+        // Filter expenses for selected month
+        const monthStart = startOfMonth(selectedMonth)
+        const monthEnd = endOfMonth(selectedMonth)
+        const monthString = format(selectedMonth, "yyyy-MM")
+
+        const expenses = transactions.filter((t: Transaction) => {
+          const transactionDate = new Date(t.date)
+          return transactionDate >= monthStart && transactionDate <= monthEnd 
+        })
 
         // Group expenses by category
         const categoryExpenses = expenses.reduce((acc: Record<string, number>, t: Transaction) => {
@@ -53,8 +70,11 @@ export function BudgetComparisonChart() {
           return acc
         }, {})
 
+        // Filter budgets for selected month
+        const monthBudgets = budgets.filter((budget: Budget) => budget.month === monthString)
+
         // Create comparison data
-        const comparisonData = budgets.map((budget: Budget) => {
+        const comparisonData = monthBudgets.map((budget: Budget) => {
           const actual = categoryExpenses[budget.category] || 0
           return {
             name: budget.category.charAt(0).toUpperCase() + budget.category.slice(1),
@@ -77,7 +97,7 @@ export function BudgetComparisonChart() {
     }
 
     fetchData()
-  }, [])
+  }, [selectedMonth])
 
   if (isLoading) {
     return (
@@ -87,52 +107,59 @@ export function BudgetComparisonChart() {
     )
   }
 
-  if (chartData.length === 0) {
-    return (
-      <div className="flex flex-col items-center justify-center h-[300px] text-center">
-        <p className="text-muted-foreground">No budget data available. Set up budgets to see comparison.</p>
-      </div>
-    )
-  }
-
   return (
-    <div aria-label="Budget versus actual spending comparison chart">
-      <ResponsiveContainer width="100%" height={300}>
-        <BarChart data={chartData}>
-          <CartesianGrid strokeDasharray="3 3" />
-          <XAxis 
-            dataKey="name" 
-            tick={{ fill: 'var(--foreground)' }}
-            tickLine={{ stroke: 'var(--foreground)' }}
-          />
-          <YAxis 
-            tick={{ fill: 'var(--foreground)' }}
-            tickLine={{ stroke: 'var(--foreground)' }}
-            tickFormatter={(value) => `$${value}`}
-          />
-          <Tooltip 
-            formatter={(value) => `$${value}`} 
-            contentStyle={{ 
-              backgroundColor: 'var(--background)',
-              color: 'var(--foreground)',
-              border: '1px solid var(--border)'
-            }}
-          />
-          <Legend formatter={(value) => <span style={{ color: 'var(--foreground)' }}>{value}</span>} />
-          <Bar dataKey="budget" fill="var(--primary)" name="Budget" />
-          <Bar dataKey="actual" fill="var(--accent-foreground)" name="Actual" />
-        </BarChart>
-      </ResponsiveContainer>
-      <div className="sr-only">
-        <h4>Budget vs Actual Spending Data</h4>
-        <ul>
-          {chartData.map((item) => (
-            <li key={item.name}>
-              {item.name}: Budget ${item.budget}, Actual ${item.actual}
-            </li>
-          ))}
-        </ul>
+    <div className="space-y-4">
+      <div className="flex justify-end">
+        <MonthPicker date={selectedMonth} onSelect={setSelectedMonth} />
       </div>
+      {chartData.length === 0 ? (
+        <Card className="w-full h-[300px] flex flex-col items-center justify-center text-center p-6">
+          <p className="text-muted-foreground mb-2">
+            No budget data available for {format(selectedMonth, "MMMM yyyy")}
+          </p>
+          <p className="text-sm text-muted-foreground">
+            Set up budgets for this month to see the comparison
+          </p>
+        </Card>
+      ) : (
+        <div aria-label="Budget versus actual spending comparison chart">
+          <ResponsiveContainer width="100%" height={300}>
+            <BarChart data={chartData}>
+              <XAxis 
+                dataKey="name" 
+                tick={{ fill: 'var(--foreground)' }}
+                tickLine={{ stroke: 'var(--foreground)' }}
+              />
+              <YAxis 
+                tick={{ fill: 'var(--foreground)' }}
+                tickLine={{ stroke: 'var(--foreground)' }}
+                tickFormatter={(value) => `$${value}`}
+              />
+              <Tooltip 
+                formatter={(value) => `$${value}`} 
+                contentStyle={{ 
+                  backgroundColor: 'var(--background)',
+                  color: 'var(--foreground)',
+                  border: '1px solid var(--border)'
+                }}
+              />
+              <Legend formatter={(value) => <span style={{ color: 'var(--foreground)' }}>{value}</span>} />
+              <Bar dataKey="budget" fill="#22c55e" name="Budget" />
+              <Bar dataKey="actual" fill="#de3a4d" name="Actual" />
+            </BarChart>
+          </ResponsiveContainer>
+          <div className="sr-only">
+            <h4>Budget vs Actual Spending Data for {format(selectedMonth, "MMMM yyyy")}</h4>
+            <ul>
+              {chartData.map((item) => (
+                <li key={item.name}>
+                  {item.name}: Budget ${item.budget}, Actual ${item.actual}
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

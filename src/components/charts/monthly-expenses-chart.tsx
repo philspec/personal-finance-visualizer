@@ -81,7 +81,6 @@ export function MonthlyExpensesChart() {
     <div aria-label="Monthly expenses chart for the last 6 months">
       <ResponsiveContainer width="100%" height={300}>
         <BarChart data={chartData}>
-          <CartesianGrid strokeDasharray="3 3" />
           <XAxis 
             dataKey="name" 
             tick={{ fill: 'var(--foreground)' }}
@@ -101,7 +100,7 @@ export function MonthlyExpensesChart() {
               border: '1px solid var(--border)'
             }}
           />
-          <Bar dataKey="expenses" fill="var(--destructive)" name="Expenses" />
+          <Bar dataKey="expenses" fill="#de3a4d" name="Expenses" />
         </BarChart>
       </ResponsiveContainer>
       <div className="sr-only">

@@ -12,8 +12,11 @@ import { Toaster } from "@/components/ui/toaster"
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "Personal Finance Visualizer",
+  title: "PursePulse",
   description: "Track your income, expenses, and budget with our personal finance visualizer.",
+  icons: {
+    icon: '/namelogo.png'
+  }
 }
 
 export default function RootLayout({
@@ -27,7 +30,9 @@ export default function RootLayout({
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <div className="relative flex min-h-screen flex-col">
             <SiteHeader />
-            <div>{children}</div>
+            <main className="flex-1">
+              {children}
+            </main>
             <SiteFooter />
           </div>
           <Toaster />

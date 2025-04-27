@@ -8,7 +8,7 @@ import { BudgetFormSheet } from "@/components/budgets/budget-form-sheet"
 import { BudgetsListSkeleton } from "@/components/skeletons/budgets-list-skeleton"
 
 export const metadata: Metadata = {
-  title: "Budgets | Personal Finance Visualizer",
+  title: "Budgets | PursePulse",
   description: "Set and manage your monthly budgets by category.",
 }
 

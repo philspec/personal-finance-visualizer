@@ -1,21 +1,26 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
-import { CalendarIcon, Plus } from "lucide-react"
-import { format } from "date-fns"
+import { Plus } from "lucide-react"
+import { format, startOfMonth } from "date-fns"
 
-import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
 import { toast } from "@/components/ui/use-toast"
-import { Calendar } from "@/components/ui/calendar"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { MonthPicker } from "@/components/ui/month-picker"
+
+interface Budget {
+  _id: string
+  category: string
+  amount: number
+  month: string
+}
 
 const budgetFormSchema = z.object({
   category: z.string({
@@ -31,41 +36,35 @@ const budgetFormSchema = z.object({
 
 type BudgetFormValues = z.infer<typeof budgetFormSchema>
 
-export function BudgetFormSheet() {
-  const [open, setOpen] = useState(false)
-  const [categories, setCategories] = useState<string[]>([])
+export function BudgetFormSheet({ budget, onSuccess }: { budget?: Budget, onSuccess?: () => void }) {
+  const [open, setOpen] = useState(!!budget)
+  const [categories, setCategories] = useState([
+    "Food",
+    "Rent",
+    "Utilities",
+    "Transportation",
+    "Entertainment",
+    "Salary",
+    "Freelance",
+    "Gifts",
+  ])
 
   const form = useForm<BudgetFormValues>({
     resolver: zodResolver(budgetFormSchema),
     defaultValues: {
-      amount: 0,
-      month: new Date(),
+      amount: budget?.amount || 0,
+      category: budget?.category || "",
+      month: budget ? new Date(budget.month) : startOfMonth(new Date()),
     },
   })
 
-  useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        const response = await fetch("/api/categories")
-        const data = await response.json()
-        setCategories(data.map((category: any) => category.name))
-      } catch (error) {
-        console.error("Error fetching categories:", error)
-        toast({
-          title: "Error",
-          description: "Failed to load categories. Please try again.",
-          variant: "destructive",
-        })
-      }
-    }
-
-    fetchCategories()
-  }, [])
-
   async function onSubmit(data: BudgetFormValues) {
     try {
-      const response = await fetch("/api/budgets", {
-        method: "POST",
+      const url = budget ? `/api/budgets/${budget._id}` : "/api/budgets"
+      const method = budget ? "PUT" : "POST"
+      
+      const response = await fetch(url, {
+        method,
         headers: {
           "Content-Type": "application/json",
         },
@@ -76,38 +75,48 @@ export function BudgetFormSheet() {
       })
 
       if (!response.ok) {
-        throw new Error("Failed to create budget")
+        throw new Error(`Failed to ${budget ? 'update' : 'create'} budget`)
       }
 
       toast({
-        title: "Budget created",
-        description: "Your budget has been created successfully.",
+        title: `Budget ${budget ? 'updated' : 'created'}`,
+        description: `Your budget has been ${budget ? 'updated' : 'created'} successfully.`,
       })
 
       form.reset()
       setOpen(false)
+      onSuccess?.()
     } catch (error) {
-      console.error("Error creating budget:", error)
+      console.error(`Error ${budget ? 'updating' : 'creating'} budget:`, error)
       toast({
         title: "Error",
-        description: "Failed to create budget. Please try again.",
+        description: `Failed to ${budget ? 'update' : 'create'} budget. Please try again.`,
         variant: "destructive",
       })
     }
   }
 
   return (
-    <Sheet open={open} onOpenChange={setOpen}>
+    <Sheet open={open} onOpenChange={(isOpen) => {
+      setOpen(isOpen)
+      if (!isOpen && budget) {
+        onSuccess?.()
+      }
+    }}>
       <SheetTrigger asChild>
-        <Button>
-          <Plus className="mr-2 h-4 w-4" />
-          Add Budget
-        </Button>
+        {!budget && (
+          <Button>
+            <Plus className="mr-2 h-4 w-4" />
+            Add Budget
+          </Button>
+        )}
       </SheetTrigger>
       <SheetContent className="sm:max-w-[425px]">
         <SheetHeader>
-          <SheetTitle>Add Budget</SheetTitle>
-          <SheetDescription>Set a monthly budget for a specific category.</SheetDescription>
+          <SheetTitle>{budget ? "Edit Budget" : "Add Budget"}</SheetTitle>
+          <SheetDescription>
+            {budget ? "Update your budget details." : "Set a monthly budget for a specific category."}
+          </SheetDescription>
         </SheetHeader>
         <div className="grid gap-4 py-4">
           <Form {...form}>
@@ -156,38 +165,16 @@ export function BudgetFormSheet() {
                 render={({ field }) => (
                   <FormItem className="flex flex-col">
                     <FormLabel>Month</FormLabel>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <FormControl>
-                          <Button
-                            variant={"outline"}
-                            className={cn("w-full pl-3 text-left font-normal", !field.value && "text-muted-foreground")}
-                          >
-                            {field.value ? format(field.value, "MMMM yyyy") : <span>Pick a month</span>}
-                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                          </Button>
-                        </FormControl>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" align="start">
-                        <Calendar
-                          mode="single"
-                          selected={field.value}
-                          onSelect={field.onChange}
-                          initialFocus
-                          disabled={(date) => {
-                            // Only allow selecting the first day of each month
-                            return date.getDate() !== 1
-                          }}
-                        />
-                      </PopoverContent>
-                    </Popover>
+                    <FormControl>
+                      <MonthPicker date={field.value} onSelect={field.onChange} />
+                    </FormControl>
                     <FormDescription>Select the month for this budget.</FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
               />
               <Button type="submit" className="w-full">
-                Add Budget
+                {budget ? "Update Budget" : "Add Budget"}
               </Button>
             </form>
           </Form>

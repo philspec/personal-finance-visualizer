@@ -11,8 +11,11 @@ import { DashboardSkeleton } from "@/components/skeletons/dashboard-skeleton"
 import { CategoryBreakdown } from "@/components/dashboard/category-breakdown"
 
 export const metadata: Metadata = {
-  title: "Dashboard | Personal Finance Visualizer",
+  title: "PursePulse",
   description: "Track your income, expenses, and budget with our personal finance visualizer.",
+  icons: {
+    icon: '/namelogo.png'
+  }
 }
 
 export default function DashboardPage() {

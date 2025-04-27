@@ -26,6 +26,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
+import { TransactionFormSheet } from "@/components/transactions/transaction-form-sheet"
 
 interface Transaction {
   _id: string
@@ -39,25 +40,26 @@ export function TransactionsList() {
   const [transactions, setTransactions] = useState<Transaction[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [deleteId, setDeleteId] = useState<string | null>(null)
+  const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null)
+
+  const fetchTransactions = async () => {
+    try {
+      const response = await fetch("/api/transactions")
+      const data = await response.json()
+      setTransactions(data)
+      setIsLoading(false)
+    } catch (error) {
+      console.error("Error fetching transactions:", error)
+      toast({
+        title: "Error",
+        description: "Failed to load transactions. Please try again.",
+        variant: "destructive",
+      })
+      setIsLoading(false)
+    }
+  }
 
   useEffect(() => {
-    const fetchTransactions = async () => {
-      try {
-        const response = await fetch("/api/transactions")
-        const data = await response.json()
-        setTransactions(data)
-        setIsLoading(false)
-      } catch (error) {
-        console.error("Error fetching transactions:", error)
-        toast({
-          title: "Error",
-          description: "Failed to load transactions. Please try again.",
-          variant: "destructive",
-        })
-        setIsLoading(false)
-      }
-    }
-
     fetchTransactions()
   }, [])
 
@@ -84,6 +86,11 @@ export function TransactionsList() {
         variant: "destructive",
       })
     }
+  }
+
+  const handleSuccess = () => {
+    fetchTransactions()
+    console.log("Transaction success")
   }
 
   if (isLoading) {
@@ -132,7 +139,7 @@ export function TransactionsList() {
               <TableHead>Date</TableHead>
               <TableHead>Description</TableHead>
               <TableHead>Category</TableHead>
-              <TableHead className="text-right">Amount</TableHead>
+              <TableHead className="text-left">Amount</TableHead>
               <TableHead className="w-[100px]">
                 <span className="sr-only">Actions</span>
               </TableHead>
@@ -145,7 +152,7 @@ export function TransactionsList() {
                 <TableCell>{transaction.description}</TableCell>
                 <TableCell className="capitalize">{transaction.category}</TableCell>
                 <TableCell 
-                  className={`text-right ${transaction.amount < 0 ? "text-destructive" : "text-green-500"}`}
+                  className={`text-left ${transaction.amount < 0 ? "text-destructive" : "text-green-500"}`}
                   aria-label={`${Math.abs(transaction.amount).toFixed(2)} ${transaction.amount < 0 ? "expense" : "income"}`}
                 >
                   ${Math.abs(transaction.amount).toFixed(2)}
@@ -161,7 +168,9 @@ export function TransactionsList() {
                     <DropdownMenuContent align="end">
                       <DropdownMenuLabel>Actions</DropdownMenuLabel>
                       <DropdownMenuSeparator />
-                      <DropdownMenuItem>Edit transaction</DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => setEditingTransaction(transaction)}>
+                        Edit transaction
+                      </DropdownMenuItem>
                       <AlertDialog>
                         <AlertDialogTrigger asChild>
                           <DropdownMenuItem onSelect={(e) => e.preventDefault()}>Delete transaction</DropdownMenuItem>
@@ -188,6 +197,15 @@ export function TransactionsList() {
           </TableBody>
         </Table>
       </div>
+      {editingTransaction && (
+        <TransactionFormSheet 
+          transaction={editingTransaction} 
+          onSuccess={() => {
+            setEditingTransaction(null)
+            handleSuccess()
+          }} 
+        />
+      )}
     </div>
   )
 }

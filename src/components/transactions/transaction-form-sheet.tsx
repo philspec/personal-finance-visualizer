@@ -35,34 +35,36 @@ const transactionFormSchema = z.object({
 
 type TransactionFormValues = z.infer<typeof transactionFormSchema>
 
-export function TransactionFormSheet() {
-  const [open, setOpen] = useState(false)
-  const [categories, setCategories] = useState([
+export function TransactionFormSheet({ transaction, onSuccess }: { transaction?: Transaction, onSuccess?: () => void }) {
+  const [open, setOpen] = useState(!!transaction)
+  const categories= [
     "Food",
     "Rent",
     "Utilities",
     "Transportation",
     "Entertainment",
-    "Salary",
-    "Freelance",
-    "Gifts",
-  ])
+    "Upskilling",
+    "Healthcare",
+    "Miscellaneous",
+  ]
 
   const form = useForm<TransactionFormValues>({
     resolver: zodResolver(transactionFormSchema),
     defaultValues: {
-      amount: 0,
-      category: "",
-      date: new Date(),
-      description: "",
+      amount: transaction?.amount || 0,
+      category: transaction?.category || "",
+      date: transaction ? new Date(transaction.date) : new Date(),
+      description: transaction?.description || "",
     },
   })
 
   async function onSubmit(data: TransactionFormValues) {
-    console.log("Submitting transaction:", data)
     try {
-      const response = await fetch("/api/transactions", {
-        method: "POST",
+      const url = transaction ? `/api/transactions/${transaction._id}` : "/api/transactions"
+      const method = transaction ? "PUT" : "POST"
+      
+      const response = await fetch(url, {
+        method,
         headers: {
           "Content-Type": "application/json",
         },
@@ -75,38 +77,48 @@ export function TransactionFormSheet() {
       })
 
       if (!response.ok) {
-        throw new Error("Failed to create transaction")
+        throw new Error(`Failed to ${transaction ? 'update' : 'create'} transaction`)
       }
 
       toast({
-        title: "Transaction created",
-        description: "Your transaction has been created successfully.",
+        title: `Transaction ${transaction ? 'updated' : 'created'}`,
+        description: `Your transaction has been ${transaction ? 'updated' : 'created'} successfully.`,
       })
 
       form.reset()
       setOpen(false)
+      onSuccess?.()
     } catch (error) {
-      console.error("Error creating transaction:", error)
+      console.error(`Error ${transaction ? 'updating' : 'creating'} transaction:`, error)
       toast({
         title: "Error",
-        description: "Failed to create transaction. Please try again.",
+        description: `Failed to ${transaction ? 'update' : 'create'} transaction. Please try again.`,
         variant: "destructive",
       })
     }
   }
 
   return (
-    <Sheet open={open} onOpenChange={setOpen}>
+    <Sheet open={open} onOpenChange={(isOpen) => {
+      setOpen(isOpen)
+      if (!isOpen && transaction) {
+        onSuccess?.()
+      }
+    }}>
       <SheetTrigger asChild>
-        <Button>
-          <Plus className="mr-2 h-4 w-4" />
-          Add Transaction
-        </Button>
+        {!transaction && (
+          <Button>
+            <Plus className="mr-2 h-4 w-4" />
+            Add Transaction
+          </Button>
+        )}
       </SheetTrigger>
       <SheetContent className="sm:max-w-[425px]">
         <SheetHeader>
-          <SheetTitle>Add Transaction</SheetTitle>
-          <SheetDescription>Add a new transaction to track your income or expenses.</SheetDescription>
+          <SheetTitle>{transaction ? "Edit Transaction" : "Add Transaction"}</SheetTitle>
+          <SheetDescription>
+            {transaction ? "Update your transaction details." : "Add a new transaction to track your income or expenses."}
+          </SheetDescription>
         </SheetHeader>
         <div className="grid gap-4 py-4">
           <Form {...form}>
@@ -200,7 +212,7 @@ export function TransactionFormSheet() {
                 )}
               />
               <Button type="submit" className="w-full">
-                Add Transaction
+                {transaction ? "Update Transaction" : "Add Transaction"}
               </Button>
             </form>
           </Form>

@@ -11,7 +11,7 @@ import { DashboardSkeleton } from "@/components/skeletons/dashboard-skeleton"
 
 
 export const metadata: Metadata = {
-  title: "Transactions | Personal Finance Visualizer",
+  title: "Transactions | PursePulse",
   description: "Manage your income and expense transactions.",
 }
 

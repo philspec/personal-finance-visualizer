@@ -94,7 +94,7 @@ export function RecentTransactions({ limit = 5 }: RecentTransactionsProps) {
               <TableHead>Date</TableHead>
               <TableHead>Description</TableHead>
               <TableHead>Category</TableHead>
-              <TableHead className="text-right">Amount</TableHead>
+              <TableHead className="text-left">Amount</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -103,7 +103,7 @@ export function RecentTransactions({ limit = 5 }: RecentTransactionsProps) {
                 <TableCell>{format(new Date(transaction.date), "MMM d, yyyy")}</TableCell>
                 <TableCell>{transaction.description}</TableCell>
                 <TableCell className="capitalize">{transaction.category}</TableCell>
-                <TableCell className={`text-right ${transaction.amount < 0 ? "text-destructive" : "text-green-500"}`}>
+                <TableCell className={`text-left ${transaction.amount < 0 ? "text-destructive" : "text-green-500"}`}>
                   ${Math.abs(transaction.amount).toFixed(2)}
                 </TableCell>
               </TableRow>

@@ -4,6 +4,7 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { BarChart3, CreditCard, Home, Menu, PieChart, X } from 'lucide-react'
 import { useState } from "react"
+import Image from "next/image"
 
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -36,22 +37,25 @@ export function SiteHeader() {
   ]
 
   return (
-    <header className="sticky top-0 z-40 w-full border-b bg-background">
+    <header className="sticky top-0 px-6 z-40 w-full border-b bg-background">
       <div className="container flex h-16 items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Link href="/" className="flex items-center space-x-2">
-            <span className="inline-block font-bold text-xl">Finance Visualizer</span>
+        <div className="flex items-center gap-1">
+          <Link href="/" className="flex items-center">
+            <Image src="/namelogo.png" alt="Logo" width={70} height={70} />
+          </Link>
+          <Link href="/" className="flex items-center">
+          <Image src="/logo.png" alt="Logo" width={230} height={200} />
           </Link>
         </div>
 
         {/* Desktop Navigation */}
-        <nav className="hidden md:flex items-center gap-6">
+        <nav className="hidden md:flex items-center gap-8">
           {routes.map((route) => (
             <Link
               key={route.href}
               href={route.href}
               className={cn(
-                "flex items-center text-sm font-medium transition-colors hover:text-primary",
+                "flex items-center text-md font-medium transition-colors hover:text-primary",
                 route.active ? "text-primary" : "text-muted-foreground"
               )}
               aria-current={route.active ? "page" : undefined}

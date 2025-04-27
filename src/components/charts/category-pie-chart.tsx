@@ -29,7 +29,8 @@ export function CategoryPieChart() {
         const response = await fetch("/api/transactions")
         const transactions = await response.json()
 
-        const expenses = transactions.filter((t: Transaction) => t.amount)
+        // Filter expenses only
+        const expenses = transactions.filter((t: Transaction) => t.amount )
 
         // Group by category
         const categoryMap = expenses.reduce((acc: Record<string, number>, t: Transaction) => {
