@@ -32,12 +32,8 @@ export default function DashboardPage() {
           </section>
           
           <section aria-labelledby="charts-heading" className="mb-6">
+            <div>
             <h2 id="charts-heading" className="sr-only">Financial Charts</h2>
-            <div className="grid gap-4 md:grid-cols-2">
-              <div className="p-6 bg-card rounded-lg border shadow-sm">
-                <h3 className="text-lg font-medium mb-4">Monthly Expenses</h3>
-                <MonthlyExpensesChart />
-              </div>
               <div className="p-6 bg-card rounded-lg border shadow-sm">
                 <h3 className="text-lg font-medium mb-4">Spending by Category</h3>
                 <CategoryPieChart />

@@ -43,7 +43,7 @@ export function MonthlyExpensesChart() {
           const monthlyExpenses = transactions
             .filter((t: Transaction) => {
               const transactionDate = new Date(t.date)
-              return transactionDate >= month.start && transactionDate <= month.end && t.amount < 0
+              return transactionDate >= month.start && transactionDate <= month.end
             })
             .reduce((sum: number, t: Transaction) => sum + Math.abs(t.amount), 0)
 

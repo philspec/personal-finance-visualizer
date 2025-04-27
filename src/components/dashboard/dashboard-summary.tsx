@@ -53,7 +53,7 @@ export function DashboardSummary() {
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium">Total Expenses</CardTitle>
-          <TrendingDown className="h-4 w-4 text-destructive" aria-hidden="true" />
+          <TrendingDown className="h-6 w-6 text-destructive" aria-hidden="true" />
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold">${summaryData.toFixed(2)}</div>
