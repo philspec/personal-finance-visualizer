@@ -147,7 +147,7 @@ export function DashboardSummary() {
       </Card>
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-md font-medium">Categories that crossed the budget</CardTitle>
+          <CardTitle className="text-md font-medium text-center">Categories that crossed the budget</CardTitle>
         </CardHeader>
         <CardContent>
           {summaryData.exceededCategories.length > 0 ? (
@@ -194,13 +194,13 @@ export function DashboardSummary() {
         <CardContent>
           {summaryData.largestTransaction ? (
             <>
-              <div className="text-2xl font-bold">
+              <div className="text-2xl font-bold text-center">
                 ${Math.abs(summaryData.largestTransaction.amount).toFixed(2)}
               </div>
-              <div className="text-md text-muted-foreground">
+              <div className="text-md text-muted-foreground text-center">
                 {capitalizeFirstLetter(summaryData.largestTransaction.category)}
               </div>
-              <div className="text-xs text-muted-foreground">
+              <div className="text-xs text-muted-foreground text-center">
                 {summaryData.largestTransaction.description}
               </div>
             </>

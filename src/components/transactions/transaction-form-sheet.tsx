@@ -6,7 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
 import { CalendarIcon, Plus } from 'lucide-react'
 import { format } from "date-fns"
-
+import { useRouter } from 'next/navigation';
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
@@ -35,8 +35,10 @@ const transactionFormSchema = z.object({
 
 type TransactionFormValues = z.infer<typeof transactionFormSchema>
 
-export function TransactionFormSheet({ transaction, onSuccess }: { transaction?: Transaction, onSuccess?: () => void }) {
-  const [open, setOpen] = useState(!!transaction)
+export function TransactionFormSheet({ onSuccess }: { onSuccess?: () => void }) {
+  const [open, setOpen] = useState(false)
+  const router = useRouter();
+
   const categories= [
     "Food",
     "Rent",
@@ -51,48 +53,42 @@ export function TransactionFormSheet({ transaction, onSuccess }: { transaction?:
   const form = useForm<TransactionFormValues>({
     resolver: zodResolver(transactionFormSchema),
     defaultValues: {
-      amount: transaction?.amount || 0,
-      category: transaction?.category || "",
-      date: transaction ? new Date(transaction.date) : new Date(),
-      description: transaction?.description || "",
+      amount: 0,
+      category: "",
+      date: new Date(),
+      description: "",
     },
   })
 
   async function onSubmit(data: TransactionFormValues) {
     try {
-      const url = transaction ? `/api/transactions/${transaction._id}` : "/api/transactions"
-      const method = transaction ? "PUT" : "POST"
-      
-      const response = await fetch(url, {
-        method,
+      const response = await fetch("/api/transactions", {
+        method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          amount: data.amount,
-          category: data.category,
-          date: data.date.toISOString(),
-          description: data.description,
-        }),
+        body: JSON.stringify(data),
       })
 
       if (!response.ok) {
-        throw new Error(`Failed to ${transaction ? 'update' : 'create'} transaction`)
+        throw new Error("Failed to create transaction")
       }
 
       toast({
-        title: `Transaction ${transaction ? 'updated' : 'created'}`,
-        description: `Your transaction has been ${transaction ? 'updated' : 'created'} successfully.`,
+        title: "Transaction created",
+        description: "Your transaction has been created successfully.",
       })
 
       form.reset()
       setOpen(false)
       onSuccess?.()
+      router.refresh();
+
     } catch (error) {
-      console.error(`Error ${transaction ? 'updating' : 'creating'} transaction:`, error)
+      console.error("Error creating transaction:", error)
       toast({
         title: "Error",
-        description: `Failed to ${transaction ? 'update' : 'create'} transaction. Please try again.`,
+        description: "Failed to create transaction. Please try again.",
         variant: "destructive",
       })
     }
@@ -101,23 +97,21 @@ export function TransactionFormSheet({ transaction, onSuccess }: { transaction?:
   return (
     <Sheet open={open} onOpenChange={(isOpen) => {
       setOpen(isOpen)
-      if (!isOpen && transaction) {
+      if (!isOpen) {
         onSuccess?.()
       }
     }}>
       <SheetTrigger asChild>
-        {!transaction && (
-          <Button>
-            <Plus className="mr-2 h-4 w-4" />
-            Add Transaction
-          </Button>
-        )}
+        <Button>
+          <Plus className="mr-2 h-4 w-4" />
+          Add Transaction
+        </Button>
       </SheetTrigger>
       <SheetContent className="sm:max-w-[425px]">
         <SheetHeader>
-          <SheetTitle>{transaction ? "Edit Transaction" : "Add Transaction"}</SheetTitle>
+          <SheetTitle>Add Transaction</SheetTitle>
           <SheetDescription>
-            {transaction ? "Update your transaction details." : "Add a new transaction to track your income or expenses."}
+            Add a new transaction to track your income or expenses.
           </SheetDescription>
         </SheetHeader>
         <div className="grid gap-4 py-4">
@@ -212,7 +206,7 @@ export function TransactionFormSheet({ transaction, onSuccess }: { transaction?:
                 )}
               />
               <Button type="submit" className="w-full">
-                {transaction ? "Update Transaction" : "Add Transaction"}
+                Add Transaction
               </Button>
             </form>
           </Form>
