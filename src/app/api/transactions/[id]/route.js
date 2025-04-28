@@ -1,19 +1,14 @@
-// @ts-nocheck
 import mongoose from 'mongoose';
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/db';
 import Transaction from '@/models/transaction';
 import { transactionSchema } from '@/schemas/transactionSchema';
 import { ZodError } from 'zod';
 
-export async function PUT(
-  request: NextRequest,
-  context: { params: { id: string } }
-) {
+export async function PUT(request, { params }) {
   try {
     await dbConnect();
     
-    const params = await context.params;
     const { id } = params;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
@@ -30,7 +25,7 @@ export async function PUT(
     }
 
     return NextResponse.json(updated);
-  } catch (error: any) {
+  } catch (error) {
     if (error instanceof ZodError) {
       return NextResponse.json({ error: 'Validation failed', details: error.errors }, { status: 400 });
     }
@@ -39,14 +34,10 @@ export async function PUT(
   }
 }
 
-export async function DELETE(
-  request: NextRequest,
-  context: { params: { id: string } }
-) {
+export async function DELETE(request, { params }) {
   try {
     await dbConnect();
     
-    const params = await context.params;
     const { id } = params;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
@@ -60,8 +51,8 @@ export async function DELETE(
     }
 
     return NextResponse.json({ message: 'Transaction deleted successfully' });
-  } catch (error: any) {
+  } catch (error) {
     console.error('Error deleting transaction:', error);
     return NextResponse.json({ error: 'An internal server error occurred' }, { status: 500 });
   }
-}
+} 
