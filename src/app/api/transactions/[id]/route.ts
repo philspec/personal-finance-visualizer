@@ -7,13 +7,13 @@ import { ZodError } from 'zod';
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: { id: string } }
 ) {
   try {
     await dbConnect();
     
-    // Properly await the params object before accessing its properties
-    const { id } = await params;
+    const params = await context.params;
+    const { id } = params;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return NextResponse.json({ error: 'Invalid transaction ID' }, { status: 400 });
@@ -40,13 +40,13 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: { id: string } }
 ) {
   try {
     await dbConnect();
     
-    // Properly await the params object before accessing its properties
-    const { id } = await params;
+    const params = await context.params;
+    const { id } = params;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return NextResponse.json({ error: 'Invalid transaction ID' }, { status: 400 });
