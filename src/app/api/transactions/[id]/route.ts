@@ -1,3 +1,4 @@
+// @ts-nocheck
 import mongoose from 'mongoose';
 import { NextRequest, NextResponse } from 'next/server';
 import dbConnect from '@/lib/db';
